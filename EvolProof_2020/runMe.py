@@ -125,4 +125,4 @@ plot_p_vs_DiffContent(Ref_YieldS_MIC_S, list([Ref_YieldS_DiS, YieldS_DiS]),
 
 # Plot explanatory 3D heat map.
 if R_Type == 'Resistant':
-    plot3D_to_2D(A_range, YieldS_range, VmaxS_HeatMap, R_Type)
+    plot3D_to_2D(A_range, YieldS_range, VmaxS_HeatMap, VmaxS_MIC_S, R_Type)

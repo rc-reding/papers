@@ -91,26 +91,36 @@ def plotHeatMap(A_range, P_range, P_HeatMap, MIC_S, P_Label,
         plt.close()
 
 
-def plot3D_to_2D(A_range, P_range, P_HeatMap, Competitor_Type='Resistant'):
-    """
-        Surface plot overlaying a mesh plot to summarise the meaning of the
+def plot3D_to_2D(A_range, P_range, P_HeatMap, P_MIC,
+                 Competitor_Type='Resistant'):
+    """ Surface plot overlaying a mesh plot to summarise the meaning of the
         heat maps used.
     """
     A_grid, P_grid = np.meshgrid(A_range, P_range)
+    Z_range = np.ones_like(A_range) * 0.1  # Height for MIC line
     fig = plt.figure(figsize=(10, 8))
     ax = fig.gca(projection='3d')  # Create axis (only if I need to manipulate it, and I do).
     ax.tick_params(axis='both', direction='out', labelsize=11)
     # Plot surface first:
-    ax.plot_surface(A_grid, P_grid, P_HeatMap, linestyle='None', shade=False,
-                    edgecolor='none', cmap='bone_r',
-                    ccount=A_range.shape[0]/2, rcount=P_range.shape[0])
+    surf_plot = ax.plot_surface(A_grid, P_grid, P_HeatMap, linestyle='None',
+                                shade=False, edgecolor='none', cmap='bone_r',
+                                ccount=A_range.shape[0]/2,
+                                rcount=P_range.shape[0])
     ax.plot_wireframe(A_grid, P_grid, P_HeatMap, linewidth=0.75,
-                      ccount=0, rcount=15)
+                      ccount=0, rcount=15, zorder=5)
+    ax.plot3D(P_MIC, P_range, Z_range, color='black', zorder=4,
+              linewidth=2.25)
     # Annotations
-    ax.text(1.75, 1.75, 0.8, 'Dose-response with\nparameter value $n$',
+    ax.text(1.25, 1.75, 1.2, 'Dose-response with\nparameter value $n$',
             fontsize=12, verticalalignment='center',
             horizontalalignment='center', backgroundcolor='none')
-    arr3D = Arrow3D([1.4, 1.4], [2.5, 2.5], [0.35, -0.1], mutation_scale=15,
+    arr3D = Arrow3D([1, 0.7], [2, 2], [0.95, 0.35], mutation_scale=15,
+                    linewidth=1.25, arrowstyle='-|>', color='k')
+    ax.add_artist(arr3D)
+    ax.text(1.65, 1.75, 0.6, 'IC$_{90}$ with\nparameter value $n$',
+            fontsize=12, verticalalignment='center',
+            horizontalalignment='center', backgroundcolor='none')
+    arr3D = Arrow3D([1.35, 1.175], [2.25, 2.25], [0.25, 0], mutation_scale=15,
                     linewidth=1.25, arrowstyle='-|>', color='k')
     ax.add_artist(arr3D)
     # Axis style
@@ -126,6 +136,12 @@ def plot3D_to_2D(A_range, P_range, P_HeatMap, Competitor_Type='Resistant'):
     ax.set_zlabel('Cell Density', fontsize=16, labelpad=10)
     fx = lambda x, pos: str(x).rstrip('0').rstrip('.')  # int shown as int when float are in axis.
     ax.xaxis.set_major_formatter(tkr.FuncFormatter(fx))
+    ax.yaxis.set_major_formatter(tkr.FuncFormatter(fx))
+    # Colorbar
+    cb = fig.colorbar(surf_plot, ax=ax, ticks=[0.1, 0.9],
+                      orientation='horizontal', shrink=0.25, pad=0.075)
+    cb.ax.set_xticklabels(['Low', 'High'])
+    cb.set_label('Cell Density', size=12)
     # Save
     fig.savefig('./img/3D_HeatMap_' + Competitor_Type + '.eps',
                 bbox_inches='tight', pad_inches=0.3)
